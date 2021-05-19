@@ -41,19 +41,19 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [215, 11]
+    coordinate: [186, 9]
     rotation: 0
     state: enabled
-- name: gaussian_interp
+- name: pi
   id: variable
   parameters:
     comment: ''
-    value: '20'
+    value: '3.14159265358979323846'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [219, 76]
+    coordinate: [12, 86]
     rotation: 0
     state: enabled
 - name: samp_rate
@@ -65,7 +65,31 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [336, 11]
+    coordinate: [322, 10]
+    rotation: 0
+    state: enabled
+- name: symbol_duration
+  id: variable
+  parameters:
+    comment: ''
+    value: '1.4648'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [309, 80]
+    rotation: 0
+    state: enabled
+- name: tone_spacing
+  id: variable
+  parameters:
+    comment: ''
+    value: '1.4648'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [186, 78]
     rotation: 0
     state: enabled
 - name: am_symbols
@@ -77,12 +101,29 @@ blocks:
     label: am_symbols
     short_id: ''
     type: str
-    value: 0.5,1,1,1,0.5,0.5,0.5,1,0.5,1
+    value: 0,1,1,1,0,0,0,1,0,1
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
     coordinate: [718, 12]
+    rotation: 0
+    state: true
+- name: analog_const_source_x_0
+  id: analog_const_source_x
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    const: '0'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    type: float
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [486, 483]
     rotation: 0
     state: true
 - name: analog_frequency_modulator_fc_0
@@ -93,12 +134,28 @@ blocks:
     comment: ''
     maxoutbuf: '0'
     minoutbuf: '0'
-    sensitivity: 2*3.14159265358979323846*1.4648/samp_rate
+    sensitivity: 2*pi*tone_spacing/samp_rate
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
     coordinate: [629, 221]
+    rotation: 0
+    state: true
+- name: blocks_float_to_complex_0
+  id: blocks_float_to_complex
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [684, 339]
     rotation: 0
     state: true
 - name: blocks_multiply_xx_0
@@ -116,7 +173,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [820, 225]
+    coordinate: [837, 225]
     rotation: 0
     state: true
 - name: blocks_repeat_0
@@ -125,7 +182,7 @@ blocks:
     affinity: ''
     alias: ''
     comment: ''
-    interp: int(1.4648*samp_rate/gaussian_interp)
+    interp: int(symbol_duration*samp_rate)
     maxoutbuf: '0'
     minoutbuf: '0'
     type: float
@@ -143,16 +200,16 @@ blocks:
     affinity: ''
     alias: ''
     comment: ''
-    interp: int(1.4648*samp_rate)
+    interp: int(symbol_duration*samp_rate)
     maxoutbuf: '0'
     minoutbuf: '0'
-    type: complex
+    type: float
     vlen: '1'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [308, 311]
+    coordinate: [231, 325]
     rotation: 0
     state: true
 - name: blocks_vector_source_x_0
@@ -185,14 +242,14 @@ blocks:
     minoutbuf: '0'
     repeat: 'False'
     tags: '[]'
-    type: complex
-    vector: '[float(x) for x in am_symbols.split('','')]'
+    type: float
+    vector: '[0.7+0.3*int(x) for x in am_symbols.split('','')]'
     vlen: '1'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [20, 294]
+    coordinate: [12, 309]
     rotation: 0
     state: true
 - name: freq
@@ -210,25 +267,6 @@ blocks:
     bus_source: false
     bus_structure: null
     coordinate: [448, 12]
-    rotation: 0
-    state: true
-- name: interp_fir_filter_xxx_0
-  id: interp_fir_filter_xxx
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    interp: gaussian_interp
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    samp_delay: '0'
-    taps: 4*gaussian_interp
-    type: fff
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [411, 213]
     rotation: 0
     state: true
 - name: osmosdr_sink_0
@@ -512,6 +550,52 @@ blocks:
     coordinate: [964, 213]
     rotation: 0
     state: true
+- name: root_raised_cosine_filter_0
+  id: root_raised_cosine_filter
+  parameters:
+    affinity: ''
+    alias: ''
+    alpha: '0.35'
+    comment: ''
+    decim: '1'
+    gain: '1'
+    interp: '1'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    ntaps: int(samp_rate/symbol_duration/3)
+    samp_rate: samp_rate
+    sym_rate: 1/symbol_duration
+    type: interp_fir_filter_fff
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [407, 181]
+    rotation: 0
+    state: true
+- name: root_raised_cosine_filter_0_0
+  id: root_raised_cosine_filter
+  parameters:
+    affinity: ''
+    alias: ''
+    alpha: '0.35'
+    comment: ''
+    decim: '1'
+    gain: '1'
+    interp: '1'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    ntaps: int(samp_rate/symbol_duration/3)
+    samp_rate: samp_rate
+    sym_rate: 1/symbol_duration
+    type: interp_fir_filter_fff
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [439, 316]
+    rotation: 0
+    state: true
 - name: wspr_symbols
   id: parameter
   parameters:
@@ -531,14 +615,17 @@ blocks:
     state: true
 
 connections:
+- [analog_const_source_x_0, '0', blocks_float_to_complex_0, '1']
 - [analog_frequency_modulator_fc_0, '0', blocks_multiply_xx_0, '0']
+- [blocks_float_to_complex_0, '0', blocks_multiply_xx_0, '1']
 - [blocks_multiply_xx_0, '0', rational_resampler_xxx_0, '0']
-- [blocks_repeat_0, '0', interp_fir_filter_xxx_0, '0']
-- [blocks_repeat_0_0, '0', blocks_multiply_xx_0, '1']
+- [blocks_repeat_0, '0', root_raised_cosine_filter_0, '0']
+- [blocks_repeat_0_0, '0', root_raised_cosine_filter_0_0, '0']
 - [blocks_vector_source_x_0, '0', blocks_repeat_0, '0']
 - [blocks_vector_source_x_0_0, '0', blocks_repeat_0_0, '0']
-- [interp_fir_filter_xxx_0, '0', analog_frequency_modulator_fc_0, '0']
 - [rational_resampler_xxx_0, '0', osmosdr_sink_0, '0']
+- [root_raised_cosine_filter_0, '0', analog_frequency_modulator_fc_0, '0']
+- [root_raised_cosine_filter_0_0, '0', blocks_float_to_complex_0, '0']
 
 metadata:
   file_format: 1
