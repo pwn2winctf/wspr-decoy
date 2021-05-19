@@ -32,7 +32,7 @@ options:
     state: enabled
 
 blocks:
-- name: samp_rate
+- name: dev_samp_rate
   id: variable
   parameters:
     comment: ''
@@ -42,6 +42,30 @@ blocks:
     bus_source: false
     bus_structure: null
     coordinate: [215, 11]
+    rotation: 0
+    state: enabled
+- name: gaussian_interp
+  id: variable
+  parameters:
+    comment: ''
+    value: '10'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [219, 76]
+    rotation: 0
+    state: enabled
+- name: samp_rate
+  id: variable
+  parameters:
+    comment: ''
+    value: 25e3
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [336, 11]
     rotation: 0
     state: enabled
 - name: analog_frequency_modulator_fc_0
@@ -57,7 +81,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [630, 394]
+    coordinate: [674, 221]
     rotation: 0
     state: true
 - name: blocks_repeat_0
@@ -66,7 +90,7 @@ blocks:
     affinity: ''
     alias: ''
     comment: ''
-    interp: int(1.4648*samp_rate)
+    interp: int(1.4648*samp_rate/gaussian_interp)
     maxoutbuf: '0'
     minoutbuf: '0'
     type: float
@@ -75,7 +99,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [413, 394]
+    coordinate: [238, 221]
     rotation: 0
     state: true
 - name: blocks_vector_source_x_0
@@ -89,13 +113,13 @@ blocks:
     repeat: 'False'
     tags: '[]'
     type: float
-    vector: (0, 1, 2, 1, 0, -1, -2, -1, 0)
+    vector: '[float(x) for x in wspr_symbols.split('','')]'
     vlen: '1'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [184, 378]
+    coordinate: [19, 205]
     rotation: 0
     state: true
 - name: freq
@@ -112,7 +136,26 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [317, 10]
+    coordinate: [448, 12]
+    rotation: 0
+    state: true
+- name: interp_fir_filter_xxx_0
+  id: interp_fir_filter_xxx
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    interp: gaussian_interp
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    samp_delay: '0'
+    taps: 4*gaussian_interp
+    type: fff
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [443, 213]
     rotation: 0
     state: true
 - name: osmosdr_sink_0
@@ -358,7 +401,7 @@ blocks:
     minoutbuf: '0'
     nchan: '1'
     num_mboards: '1'
-    sample_rate: samp_rate
+    sample_rate: dev_samp_rate
     sync: sync
     time_source0: ''
     time_source1: ''
@@ -373,14 +416,53 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [895, 314]
+    coordinate: [1147, 141]
     rotation: 0
     state: enabled
+- name: rational_resampler_xxx_0
+  id: rational_resampler_xxx
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    decim: int(samp_rate)
+    fbw: '0'
+    interp: int(dev_samp_rate)
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    taps: ''
+    type: ccc
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [886, 197]
+    rotation: 0
+    state: true
+- name: wspr_symbols
+  id: parameter
+  parameters:
+    alias: ''
+    comment: ''
+    hide: none
+    label: wspr_symbols
+    short_id: ''
+    type: str
+    value: -2,1,0,-2,-1,0,-2,-2,2,2
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [557, 12]
+    rotation: 0
+    state: true
 
 connections:
-- [analog_frequency_modulator_fc_0, '0', osmosdr_sink_0, '0']
-- [blocks_repeat_0, '0', analog_frequency_modulator_fc_0, '0']
+- [analog_frequency_modulator_fc_0, '0', rational_resampler_xxx_0, '0']
+- [blocks_repeat_0, '0', interp_fir_filter_xxx_0, '0']
 - [blocks_vector_source_x_0, '0', blocks_repeat_0, '0']
+- [interp_fir_filter_xxx_0, '0', analog_frequency_modulator_fc_0, '0']
+- [rational_resampler_xxx_0, '0', osmosdr_sink_0, '0']
 
 metadata:
   file_format: 1
