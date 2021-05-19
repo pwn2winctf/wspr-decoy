@@ -24,12 +24,13 @@ import time
 
 class modulator(gr.top_block):
 
-    def __init__(self, freq=7040100, wspr_symbols='-2,1,0,-2,-1,0,-2,-2,2,2'):
+    def __init__(self, am_symbols='0.5,1,1,1,0.5,0.5,0.5,1,0.5,1', freq=7040100, wspr_symbols='-2,1,0,-2,-1,0,-2,-2,2,2'):
         gr.top_block.__init__(self, "Modulator")
 
         ##################################################
         # Parameters
         ##################################################
+        self.am_symbols = am_symbols
         self.freq = freq
         self.wspr_symbols = wspr_symbols
 
@@ -37,7 +38,7 @@ class modulator(gr.top_block):
         # Variables
         ##################################################
         self.samp_rate = samp_rate = 25e3
-        self.gaussian_interp = gaussian_interp = 10
+        self.gaussian_interp = gaussian_interp = 20
         self.dev_samp_rate = dev_samp_rate = 2.5e6
 
         ##################################################
@@ -62,8 +63,11 @@ class modulator(gr.top_block):
         self.osmosdr_sink_0.set_bandwidth(1e3, 0)
         self.interp_fir_filter_xxx_0 = filter.interp_fir_filter_fff(gaussian_interp, [4*gaussian_interp])
         self.interp_fir_filter_xxx_0.declare_sample_delay(0)
+        self.blocks_vector_source_x_0_0 = blocks.vector_source_c([float(x) for x in am_symbols.split(',')], False, 1, [])
         self.blocks_vector_source_x_0 = blocks.vector_source_f([float(x) for x in wspr_symbols.split(',')], False, 1, [])
+        self.blocks_repeat_0_0 = blocks.repeat(gr.sizeof_gr_complex*1, int(1.4648*samp_rate))
         self.blocks_repeat_0 = blocks.repeat(gr.sizeof_float*1, int(1.4648*samp_rate/gaussian_interp))
+        self.blocks_multiply_xx_0 = blocks.multiply_vcc(1)
         self.analog_frequency_modulator_fc_0 = analog.frequency_modulator_fc(2*3.14159265358979323846*1.4648/samp_rate)
 
 
@@ -71,12 +75,21 @@ class modulator(gr.top_block):
         ##################################################
         # Connections
         ##################################################
-        self.connect((self.analog_frequency_modulator_fc_0, 0), (self.rational_resampler_xxx_0, 0))
+        self.connect((self.analog_frequency_modulator_fc_0, 0), (self.blocks_multiply_xx_0, 0))
+        self.connect((self.blocks_multiply_xx_0, 0), (self.rational_resampler_xxx_0, 0))
         self.connect((self.blocks_repeat_0, 0), (self.interp_fir_filter_xxx_0, 0))
+        self.connect((self.blocks_repeat_0_0, 0), (self.blocks_multiply_xx_0, 1))
         self.connect((self.blocks_vector_source_x_0, 0), (self.blocks_repeat_0, 0))
+        self.connect((self.blocks_vector_source_x_0_0, 0), (self.blocks_repeat_0_0, 0))
         self.connect((self.interp_fir_filter_xxx_0, 0), (self.analog_frequency_modulator_fc_0, 0))
         self.connect((self.rational_resampler_xxx_0, 0), (self.osmosdr_sink_0, 0))
 
+
+    def get_am_symbols(self):
+        return self.am_symbols
+
+    def set_am_symbols(self, am_symbols):
+        self.am_symbols = am_symbols
 
     def get_freq(self):
         return self.freq
@@ -98,6 +111,7 @@ class modulator(gr.top_block):
         self.samp_rate = samp_rate
         self.analog_frequency_modulator_fc_0.set_sensitivity(2*3.14159265358979323846*1.4648/self.samp_rate)
         self.blocks_repeat_0.set_interpolation(int(1.4648*self.samp_rate/self.gaussian_interp))
+        self.blocks_repeat_0_0.set_interpolation(int(1.4648*self.samp_rate))
 
     def get_gaussian_interp(self):
         return self.gaussian_interp
@@ -120,6 +134,9 @@ class modulator(gr.top_block):
 def argument_parser():
     parser = ArgumentParser()
     parser.add_argument(
+        "--am-symbols", dest="am_symbols", type=str, default='0.5,1,1,1,0.5,0.5,0.5,1,0.5,1',
+        help="Set 0.5,1,1,1,0.5,0.5,0.5,1,0.5,1 [default=%(default)r]")
+    parser.add_argument(
         "--freq", dest="freq", type=eng_float, default="7.0401M",
         help="Set freq [default=%(default)r]")
     parser.add_argument(
@@ -131,7 +148,7 @@ def argument_parser():
 def main(top_block_cls=modulator, options=None):
     if options is None:
         options = argument_parser().parse_args()
-    tb = top_block_cls(freq=options.freq, wspr_symbols=options.wspr_symbols)
+    tb = top_block_cls(am_symbols=options.am_symbols, freq=options.freq, wspr_symbols=options.wspr_symbols)
 
     def sig_handler(sig=None, frame=None):
         tb.stop()

@@ -48,7 +48,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: '10'
+    value: '20'
   states:
     bus_sink: false
     bus_source: false
@@ -68,6 +68,23 @@ blocks:
     coordinate: [336, 11]
     rotation: 0
     state: enabled
+- name: am_symbols
+  id: parameter
+  parameters:
+    alias: ''
+    comment: ''
+    hide: none
+    label: am_symbols
+    short_id: ''
+    type: str
+    value: 0.5,1,1,1,0.5,0.5,0.5,1,0.5,1
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [718, 12]
+    rotation: 0
+    state: true
 - name: analog_frequency_modulator_fc_0
   id: analog_frequency_modulator_fc
   parameters:
@@ -81,7 +98,25 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [674, 221]
+    coordinate: [629, 221]
+    rotation: 0
+    state: true
+- name: blocks_multiply_xx_0
+  id: blocks_multiply_xx
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    num_inputs: '2'
+    type: complex
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [820, 225]
     rotation: 0
     state: true
 - name: blocks_repeat_0
@@ -99,7 +134,25 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [238, 221]
+    coordinate: [222, 221]
+    rotation: 0
+    state: true
+- name: blocks_repeat_0_0
+  id: blocks_repeat
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    interp: int(1.4648*samp_rate)
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    type: complex
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [308, 311]
     rotation: 0
     state: true
 - name: blocks_vector_source_x_0
@@ -120,6 +173,26 @@ blocks:
     bus_source: false
     bus_structure: null
     coordinate: [19, 205]
+    rotation: 0
+    state: true
+- name: blocks_vector_source_x_0_0
+  id: blocks_vector_source_x
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    repeat: 'False'
+    tags: '[]'
+    type: complex
+    vector: '[float(x) for x in am_symbols.split('','')]'
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [20, 294]
     rotation: 0
     state: true
 - name: freq
@@ -155,7 +228,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [443, 213]
+    coordinate: [411, 213]
     rotation: 0
     state: true
 - name: osmosdr_sink_0
@@ -416,7 +489,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1147, 141]
+    coordinate: [1200, 157]
     rotation: 0
     state: enabled
 - name: rational_resampler_xxx_0
@@ -436,7 +509,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [886, 197]
+    coordinate: [964, 213]
     rotation: 0
     state: true
 - name: wspr_symbols
@@ -458,9 +531,12 @@ blocks:
     state: true
 
 connections:
-- [analog_frequency_modulator_fc_0, '0', rational_resampler_xxx_0, '0']
+- [analog_frequency_modulator_fc_0, '0', blocks_multiply_xx_0, '0']
+- [blocks_multiply_xx_0, '0', rational_resampler_xxx_0, '0']
 - [blocks_repeat_0, '0', interp_fir_filter_xxx_0, '0']
+- [blocks_repeat_0_0, '0', blocks_multiply_xx_0, '1']
 - [blocks_vector_source_x_0, '0', blocks_repeat_0, '0']
+- [blocks_vector_source_x_0_0, '0', blocks_repeat_0_0, '0']
 - [interp_fir_filter_xxx_0, '0', analog_frequency_modulator_fc_0, '0']
 - [rational_resampler_xxx_0, '0', osmosdr_sink_0, '0']
 
