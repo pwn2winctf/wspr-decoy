@@ -101,12 +101,12 @@ blocks:
     label: am_symbols
     short_id: ''
     type: str
-    value: 0,1,0,0,1,1,0,1
+    value: 0,0,0,0,1,1,1,1
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [718, 12]
+    coordinate: [693, 13]
     rotation: 0
     state: true
 - name: analog_const_source_x_0

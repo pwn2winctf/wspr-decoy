@@ -24,7 +24,7 @@ import time
 
 class modulator(gr.top_block):
 
-    def __init__(self, am_symbols='0,1,0,0,1,1,0,1', freq=7040100, wspr_symbols='0,1,2,3,0,1,2,3'):
+    def __init__(self, am_symbols='0,0,0,0,1,1,1,1', freq=7040100, wspr_symbols='0,1,2,3,0,1,2,3'):
         gr.top_block.__init__(self, "Modulator")
 
         ##################################################
@@ -173,8 +173,8 @@ class modulator(gr.top_block):
 def argument_parser():
     parser = ArgumentParser()
     parser.add_argument(
-        "--am-symbols", dest="am_symbols", type=str, default='0,1,0,0,1,1,0,1',
-        help="Set 0,1,0,0,1,1,0,1 [default=%(default)r]")
+        "--am-symbols", dest="am_symbols", type=str, default='0,0,0,0,1,1,1,1',
+        help="Set 0,0,0,0,1,1,1,1 [default=%(default)r]")
     parser.add_argument(
         "--freq", dest="freq", type=eng_float, default="7.0401M",
         help="Set freq [default=%(default)r]")
