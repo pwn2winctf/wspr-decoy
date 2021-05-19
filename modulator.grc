@@ -41,7 +41,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [186, 9]
+    coordinate: [207, 10]
     rotation: 0
     state: enabled
 - name: pi
@@ -53,7 +53,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [12, 86]
+    coordinate: [15, 109]
     rotation: 0
     state: enabled
 - name: samp_rate
@@ -89,7 +89,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [186, 78]
+    coordinate: [204, 78]
     rotation: 0
     state: enabled
 - name: am_symbols
