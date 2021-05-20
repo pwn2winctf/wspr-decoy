@@ -37,8 +37,8 @@ class modulator(gr.top_block):
         ##################################################
         # Variables
         ##################################################
-        self.tone_spacing = tone_spacing = 1.4648
-        self.symbol_duration = symbol_duration = 1.4648
+        self.tone_spacing = tone_spacing = 12000/8192
+        self.symbol_duration = symbol_duration = 8192/12000
         self.samp_rate = samp_rate = 25e3
         self.pi = pi = 3.14159265358979323846
         self.dev_samp_rate = dev_samp_rate = 2.5e6

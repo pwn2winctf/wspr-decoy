@@ -1,19 +1,19 @@
 #!/usr/bin/env python3
 from modulator import modulator
-import sys
 import re
+import time
 import string
 
 
 class WSPR:
     """ https://github.com/brainwagon/genwspr """
     syncv = [1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 0, 0,
-    1, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0,
-    0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1, 0, 0, 0, 1, 1, 0, 1, 0, 0, 0, 0, 1, 1,
-    0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1, 1, 0, 0, 0, 1, 1, 0, 1,
-    0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 1, 1, 0, 1, 1, 0,
-    0, 1, 1, 0, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 1, 1, 0,
-    0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 0, 1, 1, 0, 0, 0, 1, 1, 0, 0, 0]
+             1, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0,
+             0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1, 0, 0, 0, 1, 1, 0, 1, 0, 0, 0, 0, 1, 1,
+             0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1, 1, 0, 0, 0, 1, 1, 0, 1,
+             0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 1, 1, 0, 1, 1, 0,
+             0, 1, 1, 0, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 1, 1, 0,
+             0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 0, 1, 1, 0, 0, 0, 1, 1, 0, 0, 0]
 
     @staticmethod
     def normalizecallsign(callsign):
@@ -52,7 +52,7 @@ class WSPR:
         x = []
         while v != 0:
             x.append(str(v % 2))
-            v = v // 2 
+            v = v // 2
         while len(x) < l:
             x.append("0")
         x.reverse()
@@ -68,7 +68,7 @@ class WSPR:
             p *= 24
             if len(grid) == 4:
                 p += 12
-            else: 
+            else:
                 p += (ord(grid[4])-ord('a')) + 0.5
             lng = (p / 12) - 180.0
             p = (ord(grid[1])-ord('A'))
@@ -77,7 +77,7 @@ class WSPR:
             p *= 24
             if len(grid) == 4:
                 p += 12
-            else: 
+            else:
                 p += (ord(grid[5])-ord('a')) + 0.5
             lat = (p / 24) - 90.0
             return (lat, lng)
@@ -100,6 +100,7 @@ class WSPR:
     class convolver:
         def __init__(self):
             self.acc = 0
+
         def encode(self, bit):
             self.acc = ((self.acc << 1) & 0xFFFFFFFF) | bit
             return WSPR.parity(self.acc & 0xf2d05351), WSPR.parity(self.acc & 0xe4613c47)
@@ -108,7 +109,7 @@ class WSPR:
     def encode(l):
         e = WSPR.convolver()
         f = []
-        l = map(lambda x : int(x), list(l))
+        l = map(lambda x: int(x), list(l))
         for x in l:
             b0, b1 = e.encode(x)
             f.append(b0)
@@ -125,7 +126,7 @@ class WSPR:
 
     @staticmethod
     def bitstring(x):
-        return ''.join([str((x>>i)&1) for i in (7, 6, 5, 4, 3, 2, 1, 0)])
+        return ''.join([str((x >> i) & 1) for i in (7, 6, 5, 4, 3, 2, 1, 0)])
 
     @staticmethod
     def bitreverse(x):
@@ -135,7 +136,8 @@ class WSPR:
     @staticmethod
     def produce_symbols(callsign, grid, power):
         idx = range(0, 256)
-        ridx = list(filter(lambda x : x < 162, map(lambda x : WSPR.bitreverse(x), idx)))
+        ridx = list(filter(lambda x: x < 162, map(
+            lambda x: WSPR.bitreverse(x), idx)))
 
         callsign = WSPR.encodecallsign(callsign)
         grid = WSPR.encodegrid(grid)
@@ -153,4 +155,19 @@ class WSPR:
         return [(2*x+y) for x, y in zip(imessage, WSPR.syncv)]
 
 
-print(WSPR.produce_symbols('PU2UID', 'GG68', 40))
+def main():
+    at_min = 0
+    wspr_symbols = WSPR.produce_symbols('PU2UID', 'GG68', 40)
+    m = modulator(
+        wspr_symbols=','.join(str(x) for x in wspr_symbols),
+        am_symbols=','.join('1' for _ in wspr_symbols),
+    )
+
+    assert at_min % 2 == 0, 'at_min must be an even integer'
+    time.sleep((600 + 60*at_min - time.time()) % 600)
+    m.start()
+    m.wait()
+
+
+if __name__ == '__main__':
+    main()
