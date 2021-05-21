@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from modulator import modulator
 import re
+import os
 import time
 import string
 
@@ -160,7 +161,7 @@ def main():
     wspr_symbols = WSPR.produce_symbols('PU2UID', 'GG68', 40)
     m = modulator(
         wspr_symbols=','.join(str(x) for x in wspr_symbols),
-        am_symbols=','.join('1' for _ in wspr_symbols),
+        am_symbols=','.join(str(os.urandom(1)[0]&1) for _ in wspr_symbols),
     )
 
     assert at_min % 2 == 0, 'at_min must be an even integer'
