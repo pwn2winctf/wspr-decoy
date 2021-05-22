@@ -158,7 +158,7 @@ class WSPR:
 
 def main():
     at_min = 0
-    wspr_symbols = WSPR.produce_symbols('PU2UID', 'GG68', 40)
+    wspr_symbols = WSPR.produce_symbols('PU2UID', 'GG68', 37)
     m = modulator(
         wspr_symbols=','.join(str(x) for x in wspr_symbols),
         am_symbols=','.join(str(os.urandom(1)[0]&1) for _ in wspr_symbols),
