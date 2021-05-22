@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 from modulator import modulator
+from hashlib import sha3_224
+from datetime import datetime
 import re
-import os
 import time
 import string
-import hashlib
 
 
 class WSPR:
@@ -163,12 +163,12 @@ class SpinalEncoder:
 
     @staticmethod
     def h(s_i, m_i):
-        return hashlib.sha3_224(s_i + m_i).digest()
+        return sha3_224(s_i + m_i).digest()
 
     @staticmethod
     def rng(s_i, nbits):
         assert nbits <= 8
-        bits = bin(hashlib.sha3_224(s_i).digest()[-1])[2:].rjust(8, '0')
+        bits = bin(sha3_224(s_i).digest()[-1])[2:].rjust(8, '0')
         return bits[8-nbits:]
 
     @staticmethod
@@ -208,26 +208,43 @@ def string_to_bits(s):
     return bits
 
 
+def random_freq(seed):
+    r = sha3_224(seed).digest()[0]/255
+    return int(7040000 + (200-6-23)*r)
+
+
 def main():
     at_min = 0
+    callsign = 'PU2UID'
+    grid = 'GG68'
+    power = 37
     with open('flag.txt') as f:
         flag = string_to_bits(f.read().strip())
 
     assert at_min % 2 == 0
     assert len(flag) == 5*32
 
-    s_0 = b''
+    next_timestamp = 60*at_min + 600*((time.time() + 600) // 600)
 
-    wspr_symbols = WSPR.produce_symbols('PU2UID', 'GG68', 37)
+    s_0 = sha3_224(b'%d' % next_timestamp).digest()
+
+    freq = random_freq(s_0)
+    wspr_symbols = WSPR.produce_symbols(callsign, grid, power)
     am_symbols = SpinalEncoder.encode(s_0, flag, len(wspr_symbols))
     wspr_symbols = ','.join(str(x) for x in wspr_symbols)
 
+    print('s_0 = {}'.format(s_0.hex()))
+    print('Waiting until {} to TX at {} Hz'.format(
+        datetime.fromtimestamp(next_timestamp).strftime('%Y-%m-%d %H:%M:%S'),
+        freq))
+
     m = modulator(
+        freq=freq,
         wspr_symbols=wspr_symbols,
         am_symbols=am_symbols,
     )
 
-    time.sleep((600 + 60*at_min - time.time()) % 600)
+    time.sleep(next_timestamp - time.time())
     m.start()
     m.wait()
 
