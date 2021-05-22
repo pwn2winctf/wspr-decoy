@@ -168,7 +168,7 @@ class SpinalEncoder:
     @staticmethod
     def rng(s_i, nbits):
         assert nbits <= 8
-        bits = bin(hashlib.sha3_224(s_i).digest()[-1])[2:].rjust(8,'0')
+        bits = bin(hashlib.sha3_224(s_i).digest()[-1])[2:].rjust(8, '0')
         return bits[8-nbits:]
 
     @staticmethod
@@ -197,7 +197,6 @@ class SpinalEncoder:
                 res.append(symbol[i])
         res.extend(symbols[-1][rng_bits:])
         return ','.join(res)
-
 
 
 def string_to_bits(s):
