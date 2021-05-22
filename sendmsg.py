@@ -4,6 +4,7 @@ import re
 import os
 import time
 import string
+import hashlib
 
 
 class WSPR:
@@ -94,7 +95,8 @@ class WSPR:
 
     @staticmethod
     def encodepower(power):
-        assert power in {0, 3, 7, 10, 13, 17, 20, 23, 27, 30, 33, 37, 40, 43, 47, 50, 53, 57, 60}
+        assert power in {0, 3, 7, 10, 13, 17, 20, 23,
+                         27, 30, 33, 37, 40, 43, 47, 50, 53, 57, 60}
         power = power + 64
         return WSPR.tobin(power, 7)
 
@@ -156,15 +158,77 @@ class WSPR:
         return [(2*x+y) for x, y in zip(imessage, WSPR.syncv)]
 
 
+class SpinalEncoder:
+    """ http://nms.csail.mit.edu/papers/fp049-perry.pdf """
+
+    @staticmethod
+    def h(s_i, m_i):
+        return hashlib.sha3_224(s_i + m_i).digest()
+
+    @staticmethod
+    def rng(s_i, nbits):
+        assert nbits <= 8
+        bits = bin(hashlib.sha3_224(s_i).digest()[-1])[2:].rjust(8,'0')
+        return bits[8-nbits:]
+
+    @staticmethod
+    def encode(s_0, M, size, k=4):
+        # generate spine values
+        s_i = s_0
+        spine = []
+        for i in range(0, len(M), k):
+            m_i = bytes([int('0b' + M[i:i+k], 2)])
+            s_i = SpinalEncoder.h(s_i, m_i)
+            spine.append(s_i)
+        symbols = []
+        # generate symbols
+        rng_bits = size // len(spine)
+        for i, s_i in enumerate(spine):
+            b = rng_bits
+            if i == len(spine) - 1:
+                # use additional bits for the last spine value
+                b += size % len(spine)
+            symbols.append(SpinalEncoder.rng(s_i, b))
+        print(symbols)
+        # interleave symbols
+        res = []
+        for i in range(rng_bits):
+            for symbol in symbols:
+                res.append(symbol[i])
+        res.extend(symbols[-1][rng_bits:])
+        return ','.join(res)
+
+
+
+def string_to_bits(s):
+    alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ{}-_?!'
+    bits_per_char = 5
+    assert 1 << bits_per_char == len(alphabet)
+    bits = ''
+    for c in s:
+        bits += WSPR.tobin(alphabet.index(c), bits_per_char)
+    return bits
+
+
 def main():
     at_min = 0
+    with open('flag.txt') as f:
+        flag = string_to_bits(f.read().strip())
+
+    assert at_min % 2 == 0
+    assert len(flag) == 5*32
+
+    s_0 = b''
+
     wspr_symbols = WSPR.produce_symbols('PU2UID', 'GG68', 37)
+    am_symbols = SpinalEncoder.encode(s_0, flag, len(wspr_symbols))
+    wspr_symbols = ','.join(str(x) for x in wspr_symbols)
+
     m = modulator(
-        wspr_symbols=','.join(str(x) for x in wspr_symbols),
-        am_symbols=','.join(str(os.urandom(1)[0]&1) for _ in wspr_symbols),
+        wspr_symbols=wspr_symbols,
+        am_symbols=am_symbols,
     )
 
-    assert at_min % 2 == 0, 'at_min must be an even integer'
     time.sleep((600 + 60*at_min - time.time()) % 600)
     m.start()
     m.wait()
