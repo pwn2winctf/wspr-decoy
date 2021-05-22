@@ -94,7 +94,7 @@ class WSPR:
 
     @staticmethod
     def encodepower(power):
-        power = int(power)
+        assert power in {0, 3, 7, 10, 13, 17, 20, 23, 27, 30, 33, 37, 40, 43, 47, 50, 53, 57, 60}
         power = power + 64
         return WSPR.tobin(power, 7)
 
