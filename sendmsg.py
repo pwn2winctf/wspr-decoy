@@ -189,7 +189,6 @@ class SpinalEncoder:
                 # use additional bits for the last spine value
                 b += size % len(spine)
             symbols.append(SpinalEncoder.rng(s_i, b))
-        print(symbols)
         # interleave symbols
         res = []
         for i in range(rng_bits):
