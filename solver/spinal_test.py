@@ -5,14 +5,14 @@ from spinal import encode, decode
 from math import sqrt
 import os
 
-num_frames = 6*12
+num_frames = 6*7
 
 signal_power = 0.25
-noise_power = signal_power
+noise_power = 8*signal_power
 noise_std_dev = sqrt(noise_power)
 impulsive_noise_power = 128*signal_power
-impulsive_noise_std_dev = sqrt(noise_power)
-impulsive_noise_len = 30
+impulsive_noise_std_dev = sqrt(impulsive_noise_power)
+impulsive_noise_len = 20
 
 M_len = 5*32
 M = ''.join(str(os.urandom(1)[0] & 1) for _ in range(M_len))
