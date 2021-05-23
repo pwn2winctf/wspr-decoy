@@ -168,6 +168,8 @@ class SpinalEncoder:
     @staticmethod
     def rng(s_i, seed, nbits):
         assert nbits <= 8
+        # our variant of the algorithm uses an additional seed so that different
+        # frames containing the same data result in different symbols
         bits = bin(sha3_224(s_i + seed).digest()[-1])[2:].rjust(8, '0')
         return bits[8-nbits:]
 
