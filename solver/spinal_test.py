@@ -12,7 +12,7 @@ noise_power = signal_power
 noise_std_dev = sqrt(noise_power)
 impulsive_noise_power = 128*signal_power
 impulsive_noise_std_dev = sqrt(noise_power)
-impulsive_noise_len = 20
+impulsive_noise_len = 30
 
 M_len = 5*32
 M = ''.join(str(os.urandom(1)[0] & 1) for _ in range(M_len))
