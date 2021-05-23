@@ -27,7 +27,7 @@ for _ in range(num_frames):
     symbols = encode(seed, M, 162)
     start = randint(0, 162-impulsive_noise_len)
     symbols = [sym + gauss(0,
-        impulsive_noise_std_dev if (i>=start and i<=start+impulsive_noise_len)
+        impulsive_noise_std_dev if (i>=start and i<start+impulsive_noise_len)
         else noise_std_dev) for i, sym in enumerate(symbols)]
     seeds.append(seed)
     frames.append(symbols)
