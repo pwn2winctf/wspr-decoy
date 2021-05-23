@@ -166,15 +166,15 @@ class SpinalEncoder:
         return sha3_224(s_i + m_i).digest()
 
     @staticmethod
-    def rng(s_i, nbits):
+    def rng(s_i, seed, nbits):
         assert nbits <= 8
-        bits = bin(sha3_224(s_i).digest()[-1])[2:].rjust(8, '0')
+        bits = bin(sha3_224(s_i + seed).digest()[-1])[2:].rjust(8, '0')
         return bits[8-nbits:]
 
     @staticmethod
-    def encode(s_0, M, size, k=4):
+    def encode(seed, M, size, k=4):
         # generate spine values
-        s_i = s_0
+        s_i = b''
         spine = []
         for i in range(0, len(M), k):
             m_i = bytes([int('0b' + M[i:i+k], 2)])
@@ -188,7 +188,7 @@ class SpinalEncoder:
             if i == len(spine) - 1:
                 # use additional bits for the last spine value
                 b += size % len(spine)
-            symbols.append(SpinalEncoder.rng(s_i, b))
+            symbols.append(SpinalEncoder.rng(s_i, seed, b))
         # interleave symbols
         res = []
         for i in range(rng_bits):
@@ -226,14 +226,14 @@ def main():
 
     next_timestamp = 60*at_min + 600*((time.time() + 600) // 600)
 
-    s_0 = sha3_224(b'%d' % next_timestamp).digest()
+    seed = sha3_224(b'%d' % next_timestamp).digest()
 
-    freq = random_freq(s_0)
+    freq = random_freq(seed)
     wspr_symbols = WSPR.produce_symbols(callsign, grid, power)
-    am_symbols = SpinalEncoder.encode(s_0, flag, len(wspr_symbols))
+    am_symbols = SpinalEncoder.encode(seed, flag, len(wspr_symbols))
     wspr_symbols = ','.join(str(x) for x in wspr_symbols)
 
-    print('s_0 = {}'.format(s_0.hex()))
+    print('PRNG seed = {}'.format(seed.hex()))
     print('Waiting until {} to TX at {} Hz'.format(
         datetime.fromtimestamp(next_timestamp).strftime('%Y-%m-%d %H:%M:%S'),
         freq))
