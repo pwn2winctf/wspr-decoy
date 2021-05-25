@@ -19,7 +19,7 @@ def on_message(ws, message):
                     result = 0
                 elif spot['location']['locator'] != 'GG68':
                     result = 0
-                elif time.time() - spot['lastseen'] > 600:
+                elif time.time() - spot['lastseen'] > 630:
                     result = -1
                 else:
                     result = 1
