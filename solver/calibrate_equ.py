@@ -2,6 +2,7 @@
 from hashlib import sha3_224
 from datetime import datetime
 from dateutil.parser import parse
+import matplotlib.pyplot as plt
 import numpy as np
 import os
 import re
@@ -244,6 +245,46 @@ def wsprd(filename):
             return np.array([float(x) for x in line.strip().split(' ', 2)[1].split(',') if x != ''])
 
 
+def equalize(a, hwsz):
+    b = np.zeros(len(a))
+    for i in range(len(a)):
+        win = a[max(0, i-hwsz):i+hwsz]
+        mean = win.mean()
+        std = win.std()
+        b[i] = .5 + .5*(a[i] - mean)/std
+    return b
+
+
+def eval_dist2_err(a, sym):
+    err = np.zeros(30)
+    for j in range(2, 32):
+        b = equalize(a, j)
+        err[j-2] = ((b-sym)**2).sum()
+    return err
+
+
+def eval_bit_err(a, sym):
+    err = np.zeros(30)
+    for j in range(2, 32):
+        b = equalize(a, j)
+        err[j-2] = abs((b > 0.5)-sym).sum()/162
+    return err
+
+
+def do_plots(a, sym):
+    fig, ax1 = plt.subplots()
+    ax1.set_xlabel('hwsz')
+    ax1.set_ylabel('dist^2 err', color='r')
+    ax1.plot(np.arange(2, 32), eval_dist2_err(a, sym), color='r')
+
+    ax2 = ax1.twinx()
+    ax2.set_ylabel('bit err (ratio)', color='b')
+    ax2.plot(np.arange(2, 32), eval_bit_err(a, sym), color='b')
+
+    fig.tight_layout()
+    plt.show()
+
+
 def main(filename):
     at_min = 0
     callsign = 'PU2UID'
@@ -274,6 +315,9 @@ def main(filename):
 
     am_received = wsprd(filename)
     print('AM received:', am_received)
+
+    do_plots(am_received, np.array(
+        [float(x) for x in am_symbols.split(',')], dtype=np.float32))
 
 
 if __name__ == '__main__':
