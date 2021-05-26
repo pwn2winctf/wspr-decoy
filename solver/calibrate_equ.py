@@ -271,21 +271,21 @@ def eval_bit_err(a, sym):
     return err
 
 
-def do_plots(a, sym):
+def do_plots(dist2_err, bit_err):
     fig, ax1 = plt.subplots()
     ax1.set_xlabel('hwsz')
     ax1.set_ylabel('dist^2 err', color='r')
-    ax1.plot(np.arange(2, 32), eval_dist2_err(a, sym), color='r')
+    ax1.plot(np.arange(2, 32), dist2_err, color='r')
 
     ax2 = ax1.twinx()
     ax2.set_ylabel('bit err (ratio)', color='b')
-    ax2.plot(np.arange(2, 32), eval_bit_err(a, sym), color='b')
+    ax2.plot(np.arange(2, 32), bit_err, color='b')
 
     fig.tight_layout()
     plt.show()
 
 
-def main(filename):
+def main(filenames):
     at_min = 0
     callsign = 'PU2UID'
     grid = 'GG68'
@@ -296,29 +296,40 @@ def main(filename):
     assert at_min % 2 == 0
     assert len(flag) == 5*32
 
-    timestamp = recording_time(filename)
-    next_timestamp = 60*at_min + 600*((timestamp + 600) // 600)
-
-    seed = sha3_224(b'%d' % next_timestamp).digest()
-
-    freq = random_freq(seed)
     wspr_symbols = WSPR.produce_symbols(callsign, grid, power)
-    am_symbols = SpinalEncoder.encode(seed, flag, len(wspr_symbols))
-    wspr_symbols = ','.join(str(x) for x in wspr_symbols)
+    print('WSPR symbols:', ','.join(str(x) for x in wspr_symbols))
 
-    print('PRNG seed = {}'.format(seed.hex()))
-    print('Waiting until {} to TX at {} Hz'.format(
-        datetime.fromtimestamp(next_timestamp).strftime('%Y-%m-%d %H:%M:%S'),
-        freq))
-    print('WSPR symbols:', wspr_symbols)
-    print('AM symbols:', am_symbols)
+    mean_dist2_err = np.zeros(32-2)
+    mean_bit_err = np.zeros(32-2)
 
-    am_received = wsprd(filename)
-    print('AM received:', am_received)
+    for filename in filenames:
+        print('=> {}'.format(filename))
 
-    do_plots(am_received, np.array(
-        [float(x) for x in am_symbols.split(',')], dtype=np.float32))
+        timestamp = recording_time(filename)
+        next_timestamp = 60*at_min + 600*((timestamp + 600) // 600)
+
+        seed = sha3_224(b'%d' % next_timestamp).digest()
+
+        freq = random_freq(seed)
+        am_symbols = SpinalEncoder.encode(seed, flag, len(wspr_symbols))
+        am_symbols = np.array(
+            [float(x) for x in am_symbols.split(',')], dtype=np.float32)
+
+        print('PRNG seed = {}'.format(seed.hex()))
+        print('Waiting until {} to TX at {} Hz'.format(
+            datetime.fromtimestamp(next_timestamp).strftime(
+                '%Y-%m-%d %H:%M:%S'),
+            freq))
+        print('AM symbols:', am_symbols)
+
+        am_received = wsprd(filename)
+        print('AM received:', am_received)
+
+        mean_dist2_err += eval_dist2_err(am_received, am_symbols)/len(filenames)
+        mean_bit_err += eval_bit_err(am_received, am_symbols)/len(filenames)
+
+    do_plots(mean_dist2_err, mean_bit_err)
 
 
 if __name__ == '__main__':
-    main(sys.argv[1])
+    main(sys.argv[1:])
