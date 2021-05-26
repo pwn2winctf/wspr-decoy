@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# This writes a raw file. You need to call "convert.sh" afterwards to convert it to wav.
 import websocket
 import sys
 
