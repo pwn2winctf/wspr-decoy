@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+# This tool cuts a wav file so that it starts when the WSPR transmission starts.
+# Please cut all wav files before using them as input to the solver.
 import subprocess
 import tempfile
 import shutil
