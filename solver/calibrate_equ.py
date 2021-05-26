@@ -1,14 +1,12 @@
 #!/usr/bin/env python3
+from solve import random_freq, recording_time, wsprd, equalize
 from hashlib import sha3_224
 from datetime import datetime
-from dateutil.parser import parse
 import matplotlib.pyplot as plt
 import numpy as np
-import os
 import re
 import sys
 import string
-import subprocess
 
 
 class WSPR:
@@ -214,51 +212,10 @@ def string_to_bits(s):
     return bits
 
 
-def random_freq(seed):
-    r = sha3_224(seed).digest()[0]/255
-    return int(7040000 + (200-6-23)*r)
-
-
-def recording_time(filename):
-    filename = os.path.basename(filename)
-    m = re.search(r'(\d{4}-\d{2}-\d{2})T(\d{2})_(\d{2})_(\d{2}Z)', filename)
-    if m:
-        return parse('{} {}:{}:{}'.format(*m.groups())).timestamp()
-    m = re.search(r'-(\d+).wav', filename)
-    if m:
-        return int(m.group(1))
-    raise ValueError(
-        'time spec in filename {} not recognized'.format(filename))
-
-
-def wsprd(filename):
-    p = subprocess.Popen(['./wsprd',
-                          '-a', os.path.join(os.getenv('HOME')
-                                             or '.', '.wspr'),
-                          filename],
-                         stdout=subprocess.PIPE,
-                         encoding='utf-8')
-    for line in p.stdout:
-        if line.strip() == '<DecodeFinished>':
-            return None
-        if line.startswith('AM=>'):
-            return np.array([float(x) for x in line.strip().split(' ', 2)[1].split(',') if x != ''])
-
-
-def equalize(a, hwsz):
-    b = np.zeros(len(a))
-    for i in range(len(a)):
-        win = a[max(0, i-hwsz):i+hwsz]
-        mean = win.mean()
-        std = win.std()
-        b[i] = .5 + .5*(a[i] - mean)/std
-    return b
-
-
 def eval_dist2_err(a, sym):
     err = np.zeros(30)
     for j in range(2, 32):
-        b = equalize(a, j)
+        b = equalize(a, hwsz=j)
         err[j-2] = ((b-sym)**2).sum()
     return err
 
@@ -266,7 +223,7 @@ def eval_dist2_err(a, sym):
 def eval_bit_err(a, sym):
     err = np.zeros(30)
     for j in range(2, 32):
-        b = equalize(a, j)
+        b = equalize(a, hwsz=j)
         err[j-2] = abs((b > 0.5)-sym).sum()/162
     return err
 
