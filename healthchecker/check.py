@@ -6,6 +6,8 @@ import json
 import time
 
 def on_message(ws, message):
+    if message.startswith("CLIENT DE SERVER"):
+        return
     message = json.loads(message)
     if isinstance(message, dict) and message.get('type') == 'update':
         for spot in message['value']:
