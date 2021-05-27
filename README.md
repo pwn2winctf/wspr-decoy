@@ -57,5 +57,5 @@ We recommend that you record, as soon as possible, **at least** 4 broadcasts of 
 
 1. Fornecer link do [OpenWebRX localizado na UFSCar](https://pu2uid.duckdns.org).
 
-2. Fornecer as [duas gravações de alta qualidade do PY1EME](https://drive.google.com/drive/folders/1kHCD5thhziNtsk_4n21TSKwCTKrimB5E?usp=sharing), que são suficientes para decodificador o sinal.
+2. Fornecer as [duas gravações de alta qualidade do PY1EME](https://drive.google.com/drive/folders/1kHCD5thhziNtsk_4n21TSKwCTKrimB5E?usp=sharing), que são suficientes para decodificar o sinal.
 
