@@ -33,7 +33,7 @@ Studying the files contained in the time capsule placed on the island by Telefon
 
 This transmitter inserts a secondary modulation over WSPR, almost imperceptible to the naked eye. The call sign of the code's author corresponds precisely to one of the beacon stations that can be heard till today. This station is in the area where the Federal University of São Carlos was once located.
 
-Can these transmitters reveal something that is not told in official government accounts? Perhaps they are linked to some resistance movement by the people overseas!
+Can these transmitters reveal something that is not told by official government accounts? Perhaps they are linked to some resistance movement by the people overseas!
 
 Unfortunately, the time capsule contains only the encoder's source code. Can you implement the corresponding decoder? Record the beacons transmitted every 10 min and feed them to your decoder, retrieving the contents of the transmitter's `flag.txt` file.
 
