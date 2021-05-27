@@ -12,7 +12,7 @@ Esse transmissor insere uma segunda modulação por cima do WSPR, quase impercep
 
 Será que esses transmissores podem revelar algo que não é contado pela história oficial do governo? Talvez eles estejam ligados a algum movimento de resistência das pessoas do continente!
 
-Infelizmente, a cápsula do tempo contém apenas o código fonte do codificador. Você consegue implementar o decodificador correspondente? Obtenha as gravações das transmissões de rádio que são emitidas a cada 10 min e forneça-as ao seu decodificador, recuperando o conteúdo do arquivo `flag.txt` do transmissor.
+Infelizmente, a cápsula do tempo contém apenas o código fonte do codificador. Você consegue implementar o decodificador correspondente? Grave as transmissões de rádio que são emitidas a cada 10 min e forneça-as ao seu decodificador, recuperando o conteúdo do arquivo `flag.txt` do transmissor.
 
 **Nota importante aos competidores de 2021**
 
