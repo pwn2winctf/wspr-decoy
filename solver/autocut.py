@@ -70,4 +70,5 @@ def main(filename):
 
 
 if __name__ == '__main__':
-    main(sys.argv[1])
+    for filename in sys.argv[1:]:
+        main(filename)
