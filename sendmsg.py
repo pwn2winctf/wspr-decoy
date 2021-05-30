@@ -217,7 +217,7 @@ def random_freq(seed):
 
 def main():
     at_min = 0
-    callsign = 'PU2UID'
+    callsign = 'N0CALL'  # used to be 'PU2UID', please DO NOT use my callsign!
     grid = 'GG68'
     power = 37
     with open('flag.txt') as f:
